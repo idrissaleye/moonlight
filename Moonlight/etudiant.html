@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moonlight - Étudiant</title>
+    <link rel="stylesheet" href="etudiant.css" />
+</head>
+<body>
+    
+
+    <div class="sidebar" id="sidebar">
+        <button class="close-btn" onclick="toggleSidebar()">✖</button>
+    
+        <!-- Profil -->
+        <div class="menu-item">
+            <a href="#profil" onclick="toggleSubmenu('profil-submenu')">Profil</a>
+            <div class="submenu" id="profil-submenu">
+                <a href="#modifier-profil">Modifier le profil</a>
+                <a href="#info-personnelles">Informations personnelles</a>
+            </div>
+        </div>
+    
+        <!-- Notes (Suppression des sous-options) -->
+        <div class="menu-item">
+            <a href="#notes" onclick="afficherNotes()">Notes</a>
+        </div>
+    
+        <!-- Examens -->
+        <div class="menu-item">
+             <a href="#examens" onclick="toggleSubmenu('examens-submenu')">Examens</a>
+             <div class="submenu" id="examens-submenu">
+                <a href="#telechargement">Téléchargement</a>
+             </div>
+         </div>
+
+        <!-- Bouton de déconnexion -->
+        <button class="logout-btn" onclick="logout()">Déconnexion</button>
+    </div>
+    
+    <!-- Bouton d'ouverture du menu -->
+    <button class="open-btn" onclick="toggleSidebar()">☰ Menu</button>
+
+        <header>
+            <div class="header-container">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40">
+                    <!-- Cercle de la lune -->
+                    <circle cx="50" cy="50" r="30" fill="#f0e68c"></circle>
+                    <circle cx="60" cy="40" r="30" fill="black" opacity="0.3"></circle>
+        
+                    <!-- Rayons -->
+                    <line x1="50" y1="10" x2="50" y2="0" stroke="white" stroke-width="2"></line>
+                    <line x1="80" y1="20" x2="90" y2="10" stroke="white" stroke-width="2"></line>
+                    <line x1="20" y1="20" x2="10" y2="10" stroke="white" stroke-width="2"></line>
+                    <line x1="80" y1="70" x2="90" y2="80" stroke="white" stroke-width="2"></line>
+                    <line x1="20" y1="70" x2="10" y2="80" stroke="white" stroke-width="2"></line>
+        
+                    <!-- Texte -->
+                    <text x="50" y="90" font-family="Tahoma" font-size="12" fill="white" text-anchor="middle">
+                        Moonlight
+                    </text>
+                </svg>
+                <h1>Bienvenue, Étudiant</h1>
+            </div>
+        </header>
+        
+
+
+    <!-- Section d'affichage du contenu -->
+    <main>
+        <section>
+            <h2>Bienvenue sur votre espace étudiant</h2>
+            <p>Utilisez le menu latéral pour accéder à vos options.</p>
+        </section>
+
+        <!-- Section pour afficher le contenu -->
+        <section id="content-display">
+            <!-- La table sera injectée ici -->
+        </section>
+    </main>
+     <!-- Chatbot intégré -->
+     <div class="chat-icon" onclick="toggleChat()">💬</div>
+     <div class="chat-container" id="chat-container">
+         <div class="chat-box" id="chat-box"></div>
+         <div class="user-input">
+             <input type="text" id="user-message" placeholder="Écrivez un message...">
+             <button class="chat-button" onclick="sendMessage()">Envoyer</button>
+         </div>
+     </div>
+ <script>
+     async function sendMessage() {
+         let userInput = document.getElementById("user-message").value;
+         if (userInput.trim() === "") return;
+ 
+         let chatBox = document.getElementById("chat-box");
+         chatBox.innerHTML += `<div><strong>Vous :</strong> ${userInput}</div>`;
+         document.getElementById("user-message").value = "";
+ 
+         try {
+             // Envoi de la requête vers Flask
+             const response = await fetch('http://127.0.0.1:5000/chat', {
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/json'
+                 },
+                 body: JSON.stringify({ prompt: userInput })
+             });
+ 
+             const data = await response.json();
+ 
+             if (data.response) {
+                 chatBox.innerHTML += `<div><strong>Bot :</strong> ${data.response}</div>`;
+             } else if (data.error) {
+                 chatBox.innerHTML += `<div><strong>Bot :</strong> Erreur : ${data.error}</div>`;
+             }
+         } catch (error) {
+             console.error('Erreur :', error);
+             chatBox.innerHTML += `<div><strong>Bot :</strong> Impossible de contacter le serveur.</div>`;
+         }
+ 
+         // Faire défiler automatiquement le chat vers le bas
+         chatBox.scrollTop = chatBox.scrollHeight;
+     }
+ 
+     function toggleChat() {
+         let chatContainer = document.getElementById("chat-container");
+         chatContainer.style.display = (chatContainer.style.display === "none" || chatContainer.style.display === "") ? "block" : "none";
+     }
+ </script>
+ <style> 
+     /* Styles du chatbot */
+ .chat-icon {
+     position: fixed;
+     bottom: 20px;
+     right: 20px;
+     width: 60px;
+     height: 60px;
+     background: #007bff;
+     color: white;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     border-radius: 50%;
+     cursor: pointer;
+     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+     font-size: 30px;
+     z-index: 1000;
+ }
+ .chat-container {
+     position: fixed;
+     bottom: 80px;
+     right: 20px;
+     width: 400px;
+     background: white;
+     padding: 20px;
+     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+     border-radius: 8px;
+     display: none;
+     z-index: 1000;
+ }
+ .chat-box {
+     height: 300px;
+     overflow-y: auto;
+     border-bottom: 1px solid #ddd;
+     padding-bottom: 10px;
+ }
+ .user-input {
+     display: flex;
+     margin-top: 10px;
+ }
+ #user-message {
+     flex: 1;
+     padding: 10px;
+     border: 1px solid #ddd;
+     border-radius: 5px;
+ }
+ .chat-button {
+     padding: 10px;
+     border: none;
+     background: #007bff;
+     color: white;
+     cursor: pointer;
+     border-radius: 5px;
+     margin-left: 5px;
+ }
+ 
+ </style>
+ 
+     <script>
+         // script.js
+         function modifierSujet(id) {
+             document.getElementById('sujet-id').value = id;
+             // ... (Code pour récupérer les données du sujet et les afficher dans le formulaire) ...
+             document.getElementById('btn-annuler-sujet').style.display = 'inline';
+         }
+ 
+         function supprimerSujet(id) {
+             if (confirm("Êtes-vous sûr de vouloir supprimer ce sujet ?")) {
+                 // ... (Code pour supprimer le sujet via une requête AJAX) ...
+             }
+         }
+ 
+         document.getElementById('btn-annuler-sujet').addEventListener('click', function() {
+             document.getElementById('form-sujet').reset();
+             document.getElementById('sujet-id').value = '';
+             this.style.display = 'none';
+         });
+     </script>
+     <!-- fin chatbot -->
+    <!-- Lien vers le fichier JS -->
+    <script src="etudiant.js"></script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moonlight - Étudiant</title>
+    <link rel="stylesheet" href="etudiant.css" />
+</head>
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <button class="close-btn" onclick="toggleSidebar()">✖</button>
+    
+        <!-- Profil -->
+        <div class="menu-item">
+            <a href="#profil" onclick="toggleSubmenu('profil-submenu')">Profil</a>
+            <div class="submenu" id="profil-submenu">
+                <a href="#modifier-profil">Modifier le profil</a>
+                <a href="#info-personnelles">Informations personnelles</a>
+            </div>
+        </div>
+    
+        <!-- Notes -->
+        <div class="menu-item">
+            <a href="#notes" onclick="toggleSubmenu('notes-submenu')">Notes</a>
+            <div class="submenu" id="notes-submenu">
+                <a href="#voir-notes">Voir les notes</a>
+                <a href="#statistiques">Statistiques</a>
+            </div>
+        </div>
+    
+        <!-- Examens -->
+        <div class="menu-item">
+            <a href="#examens" onclick="toggleSubmenu('examens-submenu')">Examens</a>
+            <div class="submenu" id="examens-submenu">
+                <a href="#examens-a-venir">Examens à venir</a>
+                <a href="#examens-passes">Examens passés</a>
+            </div>
+        </div>
+    
+        <!-- Bouton de déconnexion -->
+        <button class="logout-btn" onclick="logout()">Déconnexion</button>
+    </div>
+    
+    <!-- Bouton d'ouverture du menu -->
+    <button class="open-btn" onclick="toggleSidebar()">☰ Menu</button>
+
+    <header>
+        <img src="logo.png" alt="Logo Moonlight" style="height: 50px;">
+        <h1>Bienvenue, Étudiant</h1>
+    </header>
+
+    <main>
+        <section>
+            <h2>Bienvenue sur votre espace étudiant</h2>
+            <p>Utilisez le menu latéral pour accéder à vos options.</p>
+        </section>
+    </main>
+    <!-- Chatbot intégré -->
+    <div class="chat-icon" onclick="toggleChat()">💬</div>
+    <div class="chat-container" id="chat-container">
+        <div class="chat-box" id="chat-box"></div>
+        <div class="user-input">
+            <input type="text" id="user-message" placeholder="Écrivez un message...">
+            <button class="chat-button" onclick="sendMessage()">Envoyer</button>
+        </div>
+    </div>
+   <script>
+    async function sendMessage() {
+        let userInput = document.getElementById("user-message").value;
+        if (userInput.trim() === "") return;
+
+        let chatBox = document.getElementById("chat-box");
+        chatBox.innerHTML += `<div><strong>Vous :</strong> ${userInput}</div>`;
+        document.getElementById("user-message").value = "";
+
+        try {
+            // Envoi de la requête vers Flask
+            const response = await fetch('http://127.0.0.1:5000/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prompt: userInput })
+            });
+
+            const data = await response.json();
+
+            if (data.response) {
+                chatBox.innerHTML += `<div><strong>Bot :</strong> ${data.response}</div>`;
+            } else if (data.error) {
+                chatBox.innerHTML += `<div><strong>Bot :</strong> Erreur : ${data.error}</div>`;
+            }
+        } catch (error) {
+            console.error('Erreur :', error);
+            chatBox.innerHTML += `<div><strong>Bot :</strong> Impossible de contacter le serveur.</div>`;
+        }
+
+        // Faire défiler automatiquement le chat vers le bas
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function toggleChat() {
+        let chatContainer = document.getElementById("chat-container");
+        chatContainer.style.display = (chatContainer.style.display === "none" || chatContainer.style.display === "") ? "block" : "none";
+    }
+    </script>
+
+    <!-- Lien vers le fichier JS -->
+    <script src="etudiant.js"></script>
+</body>
+</html>
